@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StayFinder – Find Your Perfect Rental</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent:  #f59e0b;
+    }
+
+    body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+
+    /* ── Navbar ── */
+    .navbar-brand { font-weight: 700; font-size: 1.4rem; color: var(--primary) !important; }
+    .nav-link.active-role { border-bottom: 2px solid var(--accent); color: var(--accent) !important; font-weight: 600; }
+
+    /* ── Hero ── */
+    #hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      padding: 90px 0 70px;
+    }
+    #hero h1 { font-size: 2.8rem; font-weight: 800; }
+    #hero .search-bar { max-width: 680px; margin: 0 auto; }
+    #hero .search-bar input,
+    #hero .search-bar select { border-radius: 0; border-right: 0; }
+    #hero .search-bar .btn { border-radius: 0 .375rem .375rem 0; background: var(--accent); border: none; color: #fff; font-weight: 600; }
+
+    /* ── Section headings ── */
+    .section-title { font-size: 1.6rem; font-weight: 700; color: #1e293b; }
+
+    /* ── Listing card ── */
+    .listing-card { border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: transform .2s, box-shadow .2s; overflow: hidden; }
+    .listing-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+    .listing-card img { height: 200px; object-fit: cover; }
+    .badge-type { background: var(--primary); font-size: .7rem; }
+    .badge-avail { background: #10b981; font-size: .7rem; }
+    .badge-unavail { background: #ef4444; font-size: .7rem; }
+    .price-tag { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+
+    /* ── Owner form card ── */
+    .owner-form-card { border: none; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,.1); }
+
+    /* ── Stats bar ── */
+    .stat-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.07); padding: 20px 28px; }
+    .stat-card .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); }
+
+    /* ── Footer ── */
+    footer { background: #1e293b; color: #94a3b8; }
+    footer a { color: #94a3b8; text-decoration: none; }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="#"><i class="bi bi-house-heart-fill me-1"></i>StayFinder</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="#listings">Browse</a></li>
+        <li class="nav-item"><a class="nav-link" href="#how-it-works">How It Works</a></li>
+        <li class="nav-item"><a class="nav-link" href="#list-your-home">List Your Home</a></li>
+      </ul>
+      <div class="d-flex gap-2 align-items-center">
+        <!-- Role switcher -->
+        <div class="btn-group btn-group-sm" role="group">
+          <button type="button" class="btn btn-outline-primary active" id="btnRenter" onclick="setRole('renter')">
+            <i class="bi bi-search me-1"></i>I'm a Renter
+          </button>
+          <button type="button" class="btn btn-outline-primary" id="btnOwner" onclick="setRole('owner')">
+            <i class="bi bi-house-add me-1"></i>I'm an Owner
+          </button>
+        </div>
+        <a href="#" class="btn btn-primary btn-sm">Sign In</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section id="hero">
+  <div class="container text-center">
+    <h1 class="mb-3">Find Your Perfect Place to Stay</h1>
+    <p class="lead mb-5 opacity-75">Thousands of verified rentals — apartments, houses, studios &amp; more.</p>
+
+    <!-- Search bar -->
+    <div class="search-bar">
+      <div class="input-group shadow-lg">
+        <input type="text" class="form-control form-control-lg" placeholder="City, area or address…" id="searchInput" />
+        <select class="form-select form-select-lg" style="max-width:160px;" id="searchType">
+          <option value="">All types</option>
+          <option>Apartment</option>
+          <option>House</option>
+          <option>Studio</option>
+          <option>Condo</option>
+          <option>Villa</option>
+        </select>
+        <button class="btn btn-lg px-4" onclick="searchListings()"><i class="bi bi-search me-1"></i>Search</button>
+      </div>
+    </div>
+
+    <!-- Quick filters -->
+    <div class="mt-4 d-flex flex-wrap justify-content-center gap-2">
+      <button class="btn btn-sm btn-light rounded-pill px-3" onclick="filterPrice(0,500)">Under $500</button>
+      <button class="btn btn-sm btn-light rounded-pill px-3" onclick="filterPrice(500,1000)">$500–$1000</button>
+      <button class="btn btn-sm btn-light rounded-pill px-3" onclick="filterPrice(1000,99999)">$1000+</button>
+      <button class="btn btn-sm btn-light rounded-pill px-3" onclick="filterAvail(true)">Available Now</button>
+      <button class="btn btn-sm btn-light rounded-pill px-3" onclick="resetFilter()">Show All</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ STATS ═══════════════════════════ -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row g-3 text-center">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num" id="statListings">0</div>
+          <div class="text-muted small">Active Listings</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">1.2K</div>
+          <div class="text-muted small">Happy Renters</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">48</div>
+          <div class="text-muted small">Cities Covered</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">4.8<i class="bi bi-star-fill text-warning fs-5 ms-1"></i></div>
+          <div class="text-muted small">Avg. Rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ HOW IT WORKS ═══════════════════════════ -->
+<section id="how-it-works" class="py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-5">How It Works</h2>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 shadow-sm h-100">
+          <div class="fs-1 text-primary mb-3"><i class="bi bi-search-heart"></i></div>
+          <h5 class="fw-700">1. Search</h5>
+          <p class="text-muted">Browse thousands of verified listings by location, price, and type.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 shadow-sm h-100">
+          <div class="fs-1 text-warning mb-3"><i class="bi bi-chat-dots"></i></div>
+          <h5>2. Connect</h5>
+          <p class="text-muted">Message the owner directly and ask any questions you have.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 bg-white rounded-3 shadow-sm h-100">
+          <div class="fs-1 text-success mb-3"><i class="bi bi-key"></i></div>
+          <h5>3. Move In</h5>
+          <p class="text-muted">Sign your rental agreement and get your keys. Welcome home!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ LISTINGS ═══════════════════════════ -->
+<section id="listings" class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0">Available Rentals</h2>
+      <span class="text-muted small" id="resultCount"></span>
+    </div>
+
+    <!-- Sort -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <select class="form-select form-select-sm w-auto" onchange="sortListings(this.value)">
+        <option value="default">Sort: Featured</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+        <option value="beds">Most Bedrooms</option>
+      </select>
+    </div>
+
+    <div class="row g-4" id="listingsGrid">
+      <!-- Cards injected by JS -->
+    </div>
+
+    <div class="text-center mt-5" id="noResults" style="display:none;">
+      <i class="bi bi-house-x fs-1 text-muted"></i>
+      <p class="text-muted mt-2">No listings match your search. Try different filters.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ LIST YOUR HOME ═══════════════════════════ -->
+<section id="list-your-home" class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="owner-form-card card p-4 p-md-5">
+          <h2 class="section-title mb-1"><i class="bi bi-house-add me-2 text-primary"></i>List Your Property</h2>
+          <p class="text-muted mb-4">Fill in the details below to publish your rental listing.</p>
+
+          <form id="ownerForm" onsubmit="submitListing(event)" novalidate>
+            <!-- Basic info -->
+            <h6 class="fw-bold text-uppercase text-muted small mb-3">Property Details</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Property Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="f-title" placeholder="e.g. Cozy 2BR near Downtown" required />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Type <span class="text-danger">*</span></label>
+                <select class="form-select" id="f-type" required>
+                  <option value="">Choose…</option>
+                  <option>Apartment</option>
+                  <option>House</option>
+                  <option>Studio</option>
+                  <option>Condo</option>
+                  <option>Villa</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Monthly Rent ($) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="f-price" placeholder="e.g. 850" min="1" required />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Address / Location <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="f-location" placeholder="Street, City" required />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Bedrooms</label>
+                <input type="number" class="form-control" id="f-beds" placeholder="2" min="0" value="1" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Bathrooms</label>
+                <input type="number" class="form-control" id="f-baths" placeholder="1" min="0" value="1" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Area (sq ft)</label>
+                <input type="number" class="form-control" id="f-area" placeholder="600" min="0" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" id="f-desc" rows="3" placeholder="Describe your property — amenities, nearby transport, house rules…"></textarea>
+            </div>
+
+            <!-- Amenities -->
+            <h6 class="fw-bold text-uppercase text-muted small mb-2 mt-3">Amenities</h6>
+            <div class="row row-cols-2 row-cols-md-4 g-2 mb-3" id="amenityChecks">
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="WiFi" id="a-wifi"><label class="form-check-label" for="a-wifi">WiFi</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Parking" id="a-park"><label class="form-check-label" for="a-park">Parking</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="AC" id="a-ac"><label class="form-check-label" for="a-ac">Air Conditioning</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Laundry" id="a-laundry"><label class="form-check-label" for="a-laundry">Laundry</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Pet Friendly" id="a-pet"><label class="form-check-label" for="a-pet">Pet Friendly</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Gym" id="a-gym"><label class="form-check-label" for="a-gym">Gym</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Pool" id="a-pool"><label class="form-check-label" for="a-pool">Pool</label></div></div>
+              <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="Furnished" id="a-furn"><label class="form-check-label" for="a-furn">Furnished</label></div></div>
+            </div>
+
+            <!-- Contact & image -->
+            <h6 class="fw-bold text-uppercase text-muted small mb-2 mt-3">Contact &amp; Photo</h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label">Owner Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="f-owner" placeholder="Your name" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Phone / Email <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="f-contact" placeholder="Phone or email" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Availability</label>
+                <select class="form-select" id="f-avail">
+                  <option value="1">Available Now</option>
+                  <option value="0">Not Available</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Image URL (static demo — no file upload server needed) -->
+            <div class="mb-4">
+              <label class="form-label">Photo URL <span class="text-muted small">(paste an image URL)</span></label>
+              <input type="url" class="form-control" id="f-img" placeholder="https://…/photo.jpg" />
+            </div>
+
+            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+              <i class="bi bi-cloud-upload me-2"></i>Publish Listing
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="fs-4 fw-bold text-white mb-2"><i class="bi bi-house-heart-fill me-1"></i>StayFinder</div>
+        <p class="small">Connecting renters with great homes since 2024. Verified listings, zero hidden fees.</p>
+      </div>
+      <div class="col-md-2">
+        <div class="fw-semibold text-white mb-2">Renters</div>
+        <ul class="list-unstyled small">
+          <li><a href="#">Browse Listings</a></li>
+          <li><a href="#">How It Works</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="col-md-2">
+        <div class="fw-semibold text-white mb-2">Owners</div>
+        <ul class="list-unstyled small">
+          <li><a href="#">List Your Home</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Owner Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <div class="fw-semibold text-white mb-2">Stay in the loop</div>
+        <div class="input-group input-group-sm">
+          <input type="email" class="form-control" placeholder="Your email" />
+          <button class="btn btn-warning fw-semibold">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <hr class="border-secondary mt-4" />
+    <div class="text-center small">&copy; 2024 StayFinder. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════ LISTING DETAIL MODAL ═══════════════════════════ -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="mdTitle">Property Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="mdBody"></div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" onclick="contactOwner()"><i class="bi bi-chat-dots me-1"></i>Contact Owner</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="appToast" class="toast align-items-center text-white border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="toastMsg">Success!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Default placeholder image ──
+const PLACEHOLDER = 'https://placehold.co/600x400/2563eb/ffffff?text=No+Photo';
+
+// ── Seed listings ──
+let listings = [
+  { id:1, title:'Modern Studio in City Center', type:'Studio', price:580, location:'Downtown, Chicago', beds:0, baths:1, area:420, owner:'Alice M.', contact:'alice@email.com', avail:true, img:'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80', amenities:['WiFi','AC','Furnished'], desc:'Bright modern studio steps from public transport and restaurants.' },
+  { id:2, title:'Spacious 3BR Family Home', type:'House', price:1450, location:'Oak Park, IL', beds:3, baths:2, area:1800, owner:'James T.', contact:'james@email.com', avail:true, img:'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80', amenities:['Parking','Laundry','Pet Friendly','Gym'], desc:'Large family home with backyard, garage, and great school district.' },
+  { id:3, title:'Cozy 1BR Near University', type:'Apartment', price:750, location:'Hyde Park, Chicago', beds:1, baths:1, area:640, owner:'Sara K.', contact:'(312) 555-0192', avail:true, img:'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80', amenities:['WiFi','Furnished','Laundry'], desc:'Perfect for students or young professionals. All utilities included.' },
+  { id:4, title:'Luxury 2BR Condo with Pool', type:'Condo', price:1900, location:'River North, Chicago', beds:2, baths:2, area:1100, owner:'David L.', contact:'david@realty.com', avail:false, img:'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80', amenities:['WiFi','AC','Pool','Gym','Parking'], desc:'High-floor condo with city views, concierge, and resort amenities.' },
+  { id:5, title:'Charming Villa with Garden', type:'Villa', price:2400, location:'Lincoln Park, Chicago', beds:4, baths:3, area:2600, owner:'Maria R.', contact:'maria@homez.com', avail:true, img:'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80', amenities:['Parking','Pet Friendly','Furnished','Pool'], desc:'Stunning villa with private garden and chef’s kitchen.' },
+  { id:6, title:'Budget Studio – Great Location', type:'Studio', price:420, location:'Logan Square, Chicago', beds:0, baths:1, area:380, owner:'Tom W.', contact:'tomw@mail.com', avail:true, img:'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80', amenities:['WiFi'], desc:'Affordable studio close to the Blue Line. Ideal for minimalists.' },
+];
+
+let filtered = [...listings];
+let currentDetail = null;
+
+// ── Role switcher ──
+function setRole(role) {
+  const btnR = document.getElementById('btnRenter');
+  const btnO = document.getElementById('btnOwner');
+  if (role === 'renter') {
+    btnR.classList.add('btn-primary'); btnR.classList.remove('btn-outline-primary');
+    btnO.classList.remove('btn-primary'); btnO.classList.add('btn-outline-primary');
+    document.getElementById('listings').scrollIntoView({ behavior:'smooth' });
+  } else {
+    btnO.classList.add('btn-primary'); btnO.classList.remove('btn-outline-primary');
+    btnR.classList.remove('btn-primary'); btnR.classList.add('btn-outline-primary');
+    document.getElementById('list-your-home').scrollIntoView({ behavior:'smooth' });
+  }
+}
+
+// ── Render cards ──
+function render(data) {
+  const grid = document.getElementById('listingsGrid');
+  const noRes = document.getElementById('noResults');
+  document.getElementById('resultCount').textContent = data.length + ' listing' + (data.length !== 1 ? 's' : '') + ' found';
+
+  if (data.length === 0) { grid.innerHTML = ''; noRes.style.display = ''; return; }
+  noRes.style.display = 'none';
+
+  grid.innerHTML = data.map(h => `
+    <div class="col-sm-6 col-lg-4">
+      <div class="card listing-card h-100">
+        <img src="${h.img || PLACEHOLDER}" class="card-img-top" alt="${h.title}" onerror="this.src='${PLACEHOLDER}'" />
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex gap-1 mb-2">
+            <span class="badge badge-type">${h.type}</span>
+            <span class="badge ${h.avail ? 'badge-avail' : 'badge-unavail'}">${h.avail ? 'Available' : 'Unavailable'}</span>
+          </div>
+          <h6 class="card-title fw-bold">${h.title}</h6>
+          <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>${h.location}</p>
+          <div class="d-flex gap-3 text-muted small mb-3">
+            <span><i class="bi bi-door-open me-1"></i>${h.beds > 0 ? h.beds + ' bed' : 'Studio'}</span>
+            <span><i class="bi bi-droplet me-1"></i>${h.baths} bath</span>
+            ${h.area ? `<span><i class="bi bi-arrows-angle-expand me-1"></i>${h.area} sqft</span>` : ''}
+          </div>
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            ${h.amenities.slice(0,3).map(a => `<span class="badge bg-light text-dark border small">${a}</span>`).join('')}
+            ${h.amenities.length > 3 ? `<span class="badge bg-light text-dark border small">+${h.amenities.length-3}</span>` : ''}
+          </div>
+          <div class="mt-auto d-flex justify-content-between align-items-center">
+            <span class="price-tag">$${h.price.toLocaleString()}<span class="text-muted fw-normal fs-6">/mo</span></span>
+            <button class="btn btn-sm btn-outline-primary" onclick="showDetail(${h.id})">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('statListings').textContent = listings.length;
+}
+
+// ── Search ──
+function searchListings() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const t = document.getElementById('searchType').value;
+  filtered = listings.filter(h =>
+    (!q || h.title.toLowerCase().includes(q) || h.location.toLowerCase().includes(q)) &&
+    (!t || h.type === t)
+  );
+  render(filtered);
+}
+
+// ── Quick filters ──
+function filterPrice(min, max) {
+  filtered = listings.filter(h => h.price >= min && h.price <= max);
+  render(filtered);
+}
+function filterAvail(val) {
+  filtered = listings.filter(h => h.avail === val);
+  render(filtered);
+}
+function resetFilter() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchType').value = '';
+  filtered = [...listings];
+  render(filtered);
+}
+
+// ── Sort ──
+function sortListings(val) {
+  let sorted = [...filtered];
+  if (val === 'price-asc')  sorted.sort((a,b) => a.price - b.price);
+  if (val === 'price-desc') sorted.sort((a,b) => b.price - a.price);
+  if (val === 'beds')       sorted.sort((a,b) => b.beds - a.beds);
+  render(sorted);
+}
+
+// ── Detail modal ──
+function showDetail(id) {
+  const h = listings.find(x => x.id === id);
+  if (!h) return;
+  currentDetail = h;
+  document.getElementById('mdTitle').textContent = h.title;
+  document.getElementById('mdBody').innerHTML = `
+    <img src="${h.img || PLACEHOLDER}" class="img-fluid rounded-3 mb-3 w-100" style="max-height:280px;object-fit:cover;" onerror="this.src='${PLACEHOLDER}'" />
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3 text-center"><div class="fw-bold fs-5">${h.beds > 0 ? h.beds : '—'}</div><div class="text-muted small">Bedrooms</div></div>
+      <div class="col-6 col-md-3 text-center"><div class="fw-bold fs-5">${h.baths}</div><div class="text-muted small">Bathrooms</div></div>
+      <div class="col-6 col-md-3 text-center"><div class="fw-bold fs-5">${h.area || '—'}</div><div class="text-muted small">Sq Ft</div></div>
+      <div class="col-6 col-md-3 text-center"><div class="fw-bold fs-5 text-primary">$${h.price.toLocaleString()}</div><div class="text-muted small">Per Month</div></div>
+    </div>
+    <p class="mb-2"><i class="bi bi-geo-alt text-primary me-1"></i><strong>${h.location}</strong></p>
+    <p class="text-muted mb-3">${h.desc || ''}</p>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      ${h.amenities.map(a => `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">${a}</span>`).join('')}
+    </div>
+    <hr />
+    <p class="mb-0"><i class="bi bi-person-circle me-1 text-muted"></i><strong>${h.owner}</strong> &nbsp;|&nbsp; <i class="bi bi-telephone me-1 text-muted"></i>${h.contact}</p>
+  `;
+  new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+function contactOwner() {
+  if (!currentDetail) return;
+  showToast(`Contact ${currentDetail.owner} at: ${currentDetail.contact}`, 'bg-primary');
+}
+
+// ── Owner form submit ──
+function submitListing(e) {
+  e.preventDefault();
+  const form = document.getElementById('ownerForm');
+  if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+  const amenities = [...document.querySelectorAll('#amenityChecks input:checked')].map(cb => cb.value);
+  const newListing = {
+    id: listings.length + 1,
+    title:    document.getElementById('f-title').value,
+    type:     document.getElementById('f-type').value,
+    price:    +document.getElementById('f-price').value,
+    location: document.getElementById('f-location').value,
+    beds:     +document.getElementById('f-beds').value,
+    baths:    +document.getElementById('f-baths').value,
+    area:     +document.getElementById('f-area').value,
+    owner:    document.getElementById('f-owner').value,
+    contact:  document.getElementById('f-contact').value,
+    avail:    document.getElementById('f-avail').value === '1',
+    img:      document.getElementById('f-img').value || PLACEHOLDER,
+    amenities,
+    desc:     document.getElementById('f-desc').value,
+  };
+
+  listings.unshift(newListing);
+  filtered = [...listings];
+  render(filtered);
+
+  form.reset();
+  form.classList.remove('was-validated');
+  showToast('Your listing has been published!', 'bg-success');
+  document.getElementById('listings').scrollIntoView({ behavior:'smooth' });
+}
+
+// ── Toast helper ──
+function showToast(msg, bg = 'bg-success') {
+  const el = document.getElementById('appToast');
+  el.className = `toast align-items-center text-white border-0 ${bg}`;
+  document.getElementById('toastMsg').textContent = msg;
+  bootstrap.Toast.getOrCreateInstance(el).show();
+}
+
+// ── Init ──
+render(listings);
+</script>
+</body>
+</html>
