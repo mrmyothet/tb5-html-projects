@@ -1,0 +1,11 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# VS Code / VS Code Insiders
+.vscode/
+.vscode-insiders/
+*.code-workspace
