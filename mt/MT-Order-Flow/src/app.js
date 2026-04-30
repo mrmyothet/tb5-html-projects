@@ -1,11 +1,6 @@
 /**
  * MT Order Flow logic
  */
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import * as bootstrap from 'bootstrap';
-import $ from 'jquery';
-import * as d3 from 'd3';
 
 // --- Data & Initialization ---
 
@@ -90,28 +85,25 @@ class OrderApp {
     attachEventListeners() {
         const self = this;
 
-        // Nav clicks
-        $('[data-page]').on('click', function(e) {
+        // Nav clicks (navbar links + back button)
+        $('[data-page]').on('click', function (e) {
             e.preventDefault();
-            const page = $(this).data('page');
-            self.showPage(page);
+            self.showPage($(this).data('page'));
         });
 
         // Theme toggle
         $('#theme-toggle').on('click', () => this.toggleTheme());
 
         // Search
-        $('#product-search').on('input', function() {
+        $('#product-search').on('input', function () {
             self.renderProducts($(this).val());
         });
 
         // Filters
-        $('#filter-date-start, #filter-date-end, #filter-status').on('change', () => {
-            this.renderOrders();
-        });
+        $('#filter-date-start, #filter-date-end, #filter-status').on('change', () => this.renderOrders());
 
-        // Purchase Modal
-        $(document).on('click', '.buy-btn', function() {
+        // Purchase Modal — delegated
+        $(document).on('click', '.buy-btn', function () {
             const pid = $(this).data('id');
             const product = self.products.find(p => p.id === pid);
             $('#purchase-product-name').text(product.name);
@@ -122,24 +114,22 @@ class OrderApp {
             modal.show();
         });
 
-        $('#confirm-purchase-btn').on('click', function() {
+        $('#confirm-purchase-btn').on('click', function () {
             const pid = $(this).data('id');
             const qty = parseInt($('#purchase-qty').val());
             self.placeOrder(pid, qty);
             bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide();
         });
 
-        // Order Details link
-        $(document).on('click', '.view-order-btn', function(e) {
+        // Order Details link — delegated
+        $(document).on('click', '.view-order-btn', function (e) {
             e.preventDefault();
-            const oid = $(this).data('id');
-            self.showOrderDetails(oid);
+            self.showOrderDetails($(this).data('id'));
         });
 
-        // Workflow Action buttons
-        $(document).on('click', '.workflow-action-btn', function() {
-            const newState = $(this).data('state');
-            self.updateOrderStatus(self.activeOrderId, newState);
+        // Workflow Action buttons — delegated
+        $(document).on('click', '.workflow-action-btn', function () {
+            self.updateOrderStatus(self.activeOrderId, $(this).data('state'));
         });
     }
 
@@ -165,7 +155,7 @@ class OrderApp {
     }
 
     getStatusClass(status) {
-        switch(status) {
+        switch (status) {
             case 'Completed': return 'bg-success';
             case 'Processing': return 'bg-warning text-dark';
             case 'Shipped': return 'bg-primary';
@@ -182,8 +172,8 @@ class OrderApp {
         const container = $('#product-list');
         container.empty();
 
-        const filtered = this.products.filter(p => 
-            p.name.toLowerCase().includes(searchToken.toLowerCase()) || 
+        const filtered = this.products.filter(p =>
+            p.name.toLowerCase().includes(searchToken.toLowerCase()) ||
             p.description.toLowerCase().includes(searchToken.toLowerCase())
         );
 
@@ -292,16 +282,14 @@ class OrderApp {
         if (!order) return;
 
         $('#detail-order-id').text(`Order ${order.id}`);
-        this.renderWorkflow(orderId);
         this.renderDetailSummary(order);
         this.showPage('order-details');
+        this.renderWorkflow(orderId);
     }
 
     renderDetailSummary(order) {
         const container = $('#detail-summary');
-        container.empty();
-
-        const content = `
+        container.html(`
             <div class="mb-3">
                 <label class="text-muted small d-block">Current Status</label>
                 <span class="badge ${this.getStatusClass(order.status)} fs-6">${order.status}</span>
@@ -318,16 +306,15 @@ class OrderApp {
             <hr>
             <h6>Status History</h6>
             <ul class="list-unstyled small">
-                ${order.history.map(h => `
+                ${[...order.history].reverse().map(h => `
                     <li class="mb-2">
                         <i class="bi bi-clock-history me-2"></i>
                         <span class="fw-bold">${h.state}</span>
                         <div class="ms-4 text-muted">${new Date(h.time).toLocaleString()}</div>
                     </li>
-                `).reverse().join('')}
+                `).join('')}
             </ul>
-        `;
-        container.append(content);
+        `);
     }
 
     updateOrderStatus(orderId, newState) {
@@ -337,7 +324,7 @@ class OrderApp {
         order.status = newState;
         order.history.push({ state: newState, time: new Date().toISOString() });
         this.saveData('orders', this.orders);
-        
+
         this.showToast(`Order status updated to: ${newState}`, 'info');
         this.showOrderDetails(orderId);
     }
@@ -347,13 +334,12 @@ class OrderApp {
     renderWorkflow(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         const currentStatus = order.status;
-        const containerId = '#workflow-viz';
-        $(containerId).empty();
+        $('#workflow-viz').empty();
 
-        const width = $(containerId).width();
-        const height = $(containerId).height();
+        const width = $('#workflow-viz').width() || 700;
+        const height = $('#workflow-viz').height() || 400;
 
-        const svg = d3.select(containerId)
+        const svg = d3.select('#workflow-viz')
             .append("svg")
             .attr("width", "100%")
             .attr("height", "100%")
@@ -400,8 +386,8 @@ class OrderApp {
             })
             .attr("stroke", d => {
                 // Highlight path if both are in history
-                const inHistory = order.history.some(h => h.state === d.source.id) && 
-                                order.history.some(h => h.state === d.target.id);
+                const inHistory = order.history.some(h => h.state === d.source.id) &&
+                    order.history.some(h => h.state === d.target.id);
                 // Specifically check if they follow each other in history?
                 // For simplicity, just highlight if both were visited
                 return inHistory ? "#0d6efd" : (this.darkMode ? "#444" : "#ccc");
@@ -442,15 +428,10 @@ class OrderApp {
         container.empty();
 
         const availableTransitions = TRANSITIONS.filter(t => t.from === currentStatus);
-        
-        if (availableTransitions.length === 0 && currentStatus !== 'Completed' && currentStatus !== 'Cancelled') {
-            // End states that are not terminal by logic? Handle here.
-        }
 
         if (availableTransitions.length > 0) {
             container.append('<div class="w-100"><label class="text-muted small">Update Status:</label></div>');
             availableTransitions.forEach(t => {
-                const stateInfo = STATES.find(s => s.id === t.to);
                 const btn = `
                     <button class="btn btn-outline-primary workflow-action-btn" data-state="${t.to}">
                         <i class="bi bi-arrow-right-short"></i> Mark as ${t.to}
@@ -464,7 +445,7 @@ class OrderApp {
     }
 }
 
-// Ensure jQuery and D3 are loaded before instantiating
+// Instantiate the app once the DOM is ready
 $(document).ready(() => {
     window.app = new OrderApp();
 });

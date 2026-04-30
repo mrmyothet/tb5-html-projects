@@ -1,6 +1,6 @@
 # MT Order Flow
 
-A frontend order-flow demo app built with Vite, Bootstrap, jQuery, and D3.
+A frontend order-flow demo app built with plain HTML, Bootstrap 5, jQuery, and D3.js. No build tools or npm required.
 
 ## Features
 
@@ -20,9 +20,18 @@ A frontend order-flow demo app built with Vite, Bootstrap, jQuery, and D3.
 - Light/Dark theme toggle (saved in browser localStorage)
 - Data persistence in browser localStorage for products and orders
 
+## Tech Stack
+
+| Library         | Version | Source |
+| --------------- | ------- | ------ |
+| Bootstrap       | 5.3.3   | CDN    |
+| Bootstrap Icons | 1.11.3  | CDN    |
+| jQuery          | 3.7.1   | CDN    |
+| D3.js           | 7       | CDN    |
+
 ## Workflow States
 
-The app models an order lifecycle with states such as:
+The app models an order lifecycle with the following states:
 
 - Order Placed
 - Processing
@@ -35,48 +44,19 @@ The app models an order lifecycle with states such as:
 
 ## Run Locally
 
-### Prerequisites
-
-- Node.js 18+ (recommended)
-- npm
-
-### Install dependencies
+No installation required. Open `index.html` directly in a browser, or serve with any static file server:
 
 ```bash
-npm install
+npx serve .
 ```
 
-### Start development server
-
-```bash
-npm run dev
-```
-
-The app runs on:
-
-- http://localhost:3000
-
-## Other Scripts
-
-### Build for production
-
-```bash
-npm run build
-```
-
-### Preview production build
-
-```bash
-npm run preview
-```
+Then open http://localhost:3000
 
 ## Project Structure
 
 ```text
 .
 |- index.html
-|- package.json
-|- vite.config.ts
 |- src/
 |  |- app.js
 |  |- index.css
@@ -84,5 +64,6 @@ npm run preview
 
 ## Notes
 
-- This project is currently frontend-focused and stores app data in the browser.
-- Clearing browser storage resets orders/products to initial defaults.
+- This project is frontend-only with no build step or dependencies to install.
+- All libraries are loaded from CDN.
+- App data is stored in browser localStorage. Clearing storage resets orders and products to initial defaults.
